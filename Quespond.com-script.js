@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Questpond: Mark watched
 // @namespace    http://nitinjs.github.io/
-// @version      2025-11-15
+// @version      2025-04-03
 // @description  Mark questpond.com videos watched
 // @author       Nitin Sawant
 // @match        https://questpond.teachable.com/p/questvideos
@@ -42,80 +42,99 @@
 
             $(".fa-play-circle-o").hide();
             $("a.with-chevron").each(function(i,a){
-                var $a = $(a);
-                $a.addClass("progressbarX");
-                $a.prepend($("<div></div>").addClass("progressbarXPercentage"));
+                try{
+                    var $a = $(a);
+                    $a.addClass("progressbarX");
+                    $a.prepend($("<div></div>").addClass("progressbarXPercentage"));
+                }catch(e){
+                    console.log("unexpected error in first a.with-chevron loop");
+                }
             });
 
             function TraverseLinks(i,a){
-                var $a = $(a);
-                var href = $a.prop("href");
-                var hrefContains = href.indexOf("/lectures/") !== -1;
-                if(hrefContains){
-                    var lectureId = /[^/]*$/.exec(href)[0];
-                    $a.attr("data-lectureId", lectureId);
-                    var $input = $("<input/>").prop("type","checkbox");
-                    $input.prop("id", lectureId);
-                    $input.prop("class","lectureCheckBox");
-                    $input.val(lectureId);
-                    var isChecked = $.localStorage(lectureId);
-                    if(isChecked=="true"){
-                        $input.prop("checked",true);
-                    }
-                    $input.change(function(){
-                        var curLectureId = $(this).val();
-                        $.localStorage(curLectureId, $(this).is(":checked"));
+                try{
+                    var $a = $(a);
+                    var href = $a.prop("href");
+                    var hrefContains = href.indexOf("/lectures/") !== -1;
+                    if(hrefContains){
+                        var lectureId = /[^/]*$/.exec(href)[0];
+                        $a.attr("data-lectureId", lectureId);
+                        var $input = $("<input/>").prop("type","checkbox");
+                        $input.prop("id", lectureId);
+                        $input.prop("class","lectureCheckBox");
+                        $input.val(lectureId);
+                        var isChecked = $.localStorage(lectureId);
+                        if(isChecked=="true"){
+                            $input.prop("checked",true);
+                        }
+                        $input.change(function(){
+                            var curLectureId = $(this).val();
+                            $.localStorage(curLectureId, $(this).is(":checked"));
 
-                        var parentLg = $(this).closest(".list-group");
-                        UpdatePercentage(0, parentLg);
-                    });
-                    $($a.parent("li")).prepend($input);
+                            var parentLg = $(this).closest(".list-group");
+                            UpdatePercentage(0, parentLg);
+                        });
+                        $($a.parent("li")).prepend($input);
+                    }
+                }catch(e){
+                    console.log("unexpected error in TraverseLinks");
                 }
             }
 
             function UpdatePercentage(i,lg){
-                var $li = $($(lg).find(".list-group-item"));
-                var $lectureCheckBoxes = $($(lg).find(".lectureCheckBox"));
-                var total = $lectureCheckBoxes.length;
-                //console.log("TOTAL:"+total);
-                var checkedBoxes = $($lectureCheckBoxes.filter(":checked")).length;
-                //console.log("CHECKED:"+checkedBoxes);
-                var parentContainer = $(lg).closest('div[class^="col-"]');
-                var $div = $($(parentContainer).find(".progressbarXPercentage"));
-                var percent = checkedBoxes/total*100;
-                var pt = 92*percent/100;
-                //$div.css("width", pt+"%");
-                $div.animate({ width:pt+"%" });
-                //console.log($div.css("width"));
-                console.log(percent);
-                if(percent>0){
-                    $($div.parent()).attr("style","background-color:#ffc107 !important;border-color:#ffc107 !important");
+                try{
+                    var $li = $($(lg).find(".list-group-item"));
+                    var $lectureCheckBoxes = $($(lg).find(".lectureCheckBox"));
+                    var total = $lectureCheckBoxes.length;
+                    console.log("TOTAL CHECKBOXES:"+total);
+                    var checkedBoxes = $($lectureCheckBoxes.filter(":checked")).length;
+                    console.log("CHECKED:"+checkedBoxes);
+                    var parentContainer = $(lg).closest('div[class^="col-"]');
+                    var $div = $($(parentContainer).find(".progressbarXPercentage"));
+                    var percent = checkedBoxes/total*100;
+                    var pt = 92*percent/100;
+                    //$div.css("width", pt+"%");
+                    $div.animate({ width:pt+"%" });
+                    //console.log($div.css("width"));
+                    console.log(percent);
+                    if(percent>0){
+                        $($div.parent()).attr("style","background-color:#ffc107 !important;border-color:#ffc107 !important");
+                    }
+                }catch(e){
+                    console.log("unexpected error in UpdatePercentage");
                 }
             }
 
-            $(".list-group-item a").each(function(i,a){
+            var $links = $(".list-group-item a");
+            console.log("total video links "+ $links.length);
+            $links.each(function(i,a){
+                console.log("processing "+ $(a).attr("href"));
                 TraverseLinks(i,a);
             });
 
             let intervalId = setInterval(function(){
-                $("[data-lectureId]").each(function(i,inp){
-                    var lectureId = $(inp).attr("data-lectureId");
-                    var isChecked = $.localStorage(lectureId);
-                    if(isChecked=="true"){
-                        $("#"+lectureId).prop("checked",isChecked);
-                    }
-                });
+                try{
+                    $("[data-lectureId]").each(function(i,inp){
+                        var lectureId = $(inp).attr("data-lectureId");
+                        var isChecked = $.localStorage(lectureId);
+                        if(isChecked=="true"){
+                            $("#"+lectureId).prop("checked",isChecked);
+                        }
+                    });
 
-                $(".list-group").each(function(i,lg){
-                    UpdatePercentage(i,lg);
-                });
+                    $(".list-group").each(function(i,lg){
+                        UpdatePercentage(i,lg);
+                    });
 
-                console.log("Update percentage complete");
+                    console.log("Update percentage complete");
+                }catch(e){
+                    console.log("unexpected error in last SetInterval");
+                }
             }, 5000);
 
             $(".list-group").each(function(i,lg){
                 UpdatePercentage(i,lg);
             });
         }
-    }, 1500);
+    }, 3500);
 })(jQuery);
