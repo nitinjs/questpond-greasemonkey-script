@@ -1,4 +1,4 @@
-# questpond-greasemonkey-script
+# Questpond.com tampermonkey script
 This greasemonkey script allows tracking watched and not watched videos on questpond.com
 Just install tampermonkey in your favorite browser and add this script https://www.tampermonkey.net/
 
