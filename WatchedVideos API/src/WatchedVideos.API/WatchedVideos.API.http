@@ -1,0 +1,11 @@
+@WatchedVideos.API_HostAddress = http://localhost:5038
+
+POST {{WatchedVideos.API_HostAddress}}/api/Questpond/MarkAsWatched?id=video-001&isWatched=true&userId=user-123
+Accept: application/json
+
+###
+
+GET {{WatchedVideos.API_HostAddress}}/api/Questpond/GetAllWatched?userId=user-123
+Accept: application/json
+
+###
